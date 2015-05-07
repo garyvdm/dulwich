@@ -103,8 +103,8 @@ class Protocol(object):
     """
 
     def __init__(self, read, write, close=None, report_activity=None):
-        self.read = read
-        self.write = write
+        self._read = read
+        self._write = write
         self._close = close
         self.report_activity = report_activity
         self._readahead = None
@@ -119,6 +119,16 @@ class Protocol(object):
     def __exit__(self, exc_type, exc_val, exc_tb):
         self.close()
 
+    def write(self, data):
+        print(' --> {!r}'.format(data[:100]))
+        return self._write(data)
+
+    def read(self, *args, **kwargs):
+        data = self._read(*args, **kwargs)
+        print(' <-- {!r}'.format(data[:100]))
+        return data
+
+
     def read_pkt_line(self):
         """Reads a pkt-line from the remote git process.
 
@@ -128,7 +138,7 @@ class Protocol(object):
             None for a flush-pkt ('0000').
         """
         if self._readahead is None:
-            read = self.read
+            read = self._read
         else:
             read = self._readahead.read
             self._readahead = None
@@ -145,6 +155,7 @@ class Protocol(object):
             if self.report_activity:
                 self.report_activity(size, 'read')
             pkt_contents = read(size-4)
+            print(' <-- {!r}'.format((sizestr + pkt_contents)[:100]))
         except socket.error as e:
             raise GitProtocolError(e)
         else:

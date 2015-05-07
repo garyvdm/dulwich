@@ -273,8 +273,7 @@ class DulwichTCPClientTest(CompatTestCase, DulwichClientTestBase):
                 '--listen=localhost', '--reuseaddr',
                 self.gitroot]
         self.process = subprocess.Popen(
-            args, env=env, cwd=self.gitroot,
-            stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+            args, env=env, cwd=self.gitroot)
         if not check_for_daemon():
             raise SkipTest('git-daemon failed to start')
 
@@ -294,8 +293,6 @@ class DulwichTCPClientTest(CompatTestCase, DulwichClientTestBase):
             except (OSError, IOError):
                 pass
         self.process.wait()
-        self.process.stdout.close()
-        self.process.stderr.close()
         DulwichClientTestBase.tearDown(self)
         CompatTestCase.tearDown(self)
 
